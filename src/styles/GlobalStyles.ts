@@ -1,4 +1,4 @@
-import { createGlobalStyle } from "styled-components";
+import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
     * {
@@ -14,5 +14,6 @@ export const GlobalStyle = createGlobalStyle`
         height: 100vh;
 
         background-color: #1e1e1e;
+        overflow: hidden;
     }
 `

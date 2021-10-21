@@ -1,47 +1,62 @@
-import LogoImage from '@assets/logo.svg';
-import { Message, MessageContent, MessageListContainer, MessageUList, MessageUser, UserImage } from './styles';
+import { Message, MessageContent, MessageListContainer, MessageUList, MessageUser, UserImage } from './styles'
+import { useEffect, useState } from 'react'
+
+import LogoImage from '@assets/logo.svg'
+import { MessageModel } from '@models/message'
+import { api } from '@services/api'
+import io from 'socket.io-client'
+
+const messagesQueue: MessageModel[] = []
+
+const socket = io('http://localhost:9090')
+
+socket.on('new_message', (message: MessageModel) => {
+	messagesQueue.push(message)
+})
 
 export function MessageList() {
-    return (
-        <MessageListContainer>
-            <img src={LogoImage} alt="DoWhile 2021" />
-            <MessageUList>
-                <Message>
-                    <MessageContent>
-                        Vai ser o melhor evento do ano 🚀🚀🚀
-                    </MessageContent>
-                    <MessageUser>
-                        <UserImage>
-                            <img src="https://github.com/PatrickDorneles.png" alt="Patrick Dorneles" />
-                        </UserImage>
-                        <span>Patrick Dorneles</span>
-                    </MessageUser>
-                </Message>
+	const [messages, setMessages] = useState<MessageModel[]>([])
+	
+	useEffect(() => {
+		const timer = setInterval(() => {
+			if(messagesQueue.length > 0) {
+				setMessages(prevState => {
+					return [
+						messagesQueue[0],
+						prevState[0],
+						prevState[1]
+					].filter(Boolean)
+				})
 
-                <Message>
-                    <MessageContent>
-                        Só por dezembro chegar 🔥🔥🔥    
-                    </MessageContent>
-                    <MessageUser>
-                        <UserImage>
-                            <img src="https://github.com/PatrickDorneles.png" alt="Patrick Dorneles" />
-                        </UserImage>
-                        <span>Patrick Dorneles</span>
-                    </MessageUser>
-                </Message>
+				messagesQueue.shift()
+			}
+		}, 3000)
+	}, [])
 
-                <Message>
-                    <MessageContent>
-                        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dicta suscipit incidunt, praesentium ipsa alias ex fugit quasi at quibusdam eaque cupiditate molestiae ut quidem! Nihil impedit fugit iure quo perspiciatis.
-                    </MessageContent>
-                    <MessageUser>
-                        <UserImage>
-                            <img src="https://github.com/PatrickDorneles.png" alt="Patrick Dorneles" />
-                        </UserImage>
-                        <span>Patrick Dorneles</span>
-                    </MessageUser>
-                </Message>
-            </MessageUList>
-        </MessageListContainer>
-    )
+	useEffect(() => {
+		api
+			.get<MessageModel[]>('/message/last3')
+			.then(response => {
+				setMessages(response.data)
+			})
+	}, [])
+
+	return (
+		<MessageListContainer>
+			<img src={LogoImage} alt="DoWhile 2021" />
+			<MessageUList>
+				{messages.map((message) => (
+					<Message key={message.id}>
+						<MessageContent>{message.text}</MessageContent>
+						<MessageUser>
+							<UserImage>
+								<img src={message.user.avatar_url} alt={message.user.name} />
+							</UserImage>
+							<span>{message.user.name}</span>
+						</MessageUser>
+					</Message>
+				))}
+			</MessageUList>
+		</MessageListContainer>
+	)
 }

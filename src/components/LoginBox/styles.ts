@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components'
 
 export const LoginBoxContainer = styled.div`
     height: 100vh;
@@ -42,4 +42,4 @@ export const SignInWithGithub = styled.a`
         margin-right: 16px;
         fill: #09090a;
     }
-`;
+`
